@@ -75,10 +75,10 @@ public class Robot extends TimedRobot {
     rightDrive = new SpeedControllerGroup(frontRightDrive, backRightDrive);
 
     //set ramp rate
-    frontLeftDrive.configOpenloopRamp(1);
-    backLeftDrive.configOpenloopRamp(1);
-    frontRightDrive.configOpenloopRamp(1);
-    backRightDrive.configOpenloopRamp(1);
+    frontLeftDrive.configOpenloopRamp(.2);
+    backLeftDrive.configOpenloopRamp(.2);
+    frontRightDrive.configOpenloopRamp(.2);
+    backRightDrive.configOpenloopRamp(.2);
 
     //the driving bit
     driveTrain = new DifferentialDrive(leftDrive, rightDrive);
