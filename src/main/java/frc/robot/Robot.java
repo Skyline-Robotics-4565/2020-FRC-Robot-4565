@@ -7,7 +7,14 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+
+import edu.wpi.first.wpilibj.GenericHID.Hand;
+import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -24,6 +31,30 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
+  //The giant, unending list of variables
+
+  WPI_TalonFX frontLeftDrive;
+  WPI_TalonFX backLeftDrive;
+  WPI_TalonFX frontRightDrive;
+  WPI_TalonFX backRightDrive;
+
+  XboxController drivingController;
+  XboxController operatingController;
+
+  //used to sqaure input
+
+  double throttleInput;
+  double turningInput;
+
+  //the actual driving objects
+
+  SpeedControllerGroup leftDrive;
+  SpeedControllerGroup rightDrive;
+  DifferentialDrive driveTrain;
+
+  //timer used for autonomous driving
+  Timer timer;
+
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -33,6 +64,32 @@ public class Robot extends TimedRobot {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
+
+    frontLeftDrive = new WPI_TalonFX(2);
+    backLeftDrive = new WPI_TalonFX(3);
+    leftDrive = new SpeedControllerGroup(frontLeftDrive, backLeftDrive);
+    
+    //create right speed drivers
+    frontRightDrive = new WPI_TalonFX(4);
+    backRightDrive = new WPI_TalonFX(5);
+    rightDrive = new SpeedControllerGroup(frontRightDrive, backRightDrive);
+
+    //the driving bit
+    driveTrain = new DifferentialDrive(leftDrive, rightDrive);
+    driveTrain.setSafetyEnabled(false);
+
+    //Controller that controls movement
+    drivingController = new XboxController(0);
+    //Controller that controls literally everything else
+    operatingController = new XboxController(1);
+
+    //numbers used to square movement in teleop
+    throttleInput = 0;
+    turningInput = 0;
+
+    //global timer set-up, used for autonomous
+    timer = new Timer();
+
   }
 
   /**
@@ -63,6 +120,10 @@ public class Robot extends TimedRobot {
     m_autoSelected = m_chooser.getSelected();
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
+    
+    //start driving at half speed
+    timer.start();
+    driveTrain.arcadeDrive(.5, 0);
   }
 
   /**
@@ -79,6 +140,12 @@ public class Robot extends TimedRobot {
         // Put default auto code here
         break;
     }
+
+    if (timer.get() > 7.5){
+      driveTrain.arcadeDrive(0, 0);
+      timer.stop();
+      timer.reset();
+    }
   }
 
   /**
@@ -86,8 +153,27 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
+    //The driving code
+    throttleInput = (-drivingController.getY(Hand.kRight));
+    turningInput = (drivingController.getX(Hand.kLeft));
+    
+    //square the inputs for throttle
+    if (throttleInput < 0){
+    throttleInput = -(throttleInput*throttleInput);
+  }else{
+    throttleInput = throttleInput*throttleInput;
+  }
+  
+  //square the inputs for turning
+  if (turningInput < 0){
+    turningInput = -(turningInput*turningInput);
+  }else{
+    turningInput = turningInput*turningInput;
   }
 
+  driveTrain.arcadeDrive(throttleInput, turningInput);
+}
+  
   /**
    * This function is called periodically during test mode.
    */
