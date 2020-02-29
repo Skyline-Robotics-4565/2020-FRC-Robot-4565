@@ -74,6 +74,12 @@ public class Robot extends TimedRobot {
     backRightDrive = new WPI_TalonFX(5);
     rightDrive = new SpeedControllerGroup(frontRightDrive, backRightDrive);
 
+    //set ramp rate
+    frontLeftDrive.configOpenloopRamp(1);
+    backLeftDrive.configOpenloopRamp(1);
+    frontRightDrive.configOpenloopRamp(1);
+    backRightDrive.configOpenloopRamp(1);
+
     //the driving bit
     driveTrain = new DifferentialDrive(leftDrive, rightDrive);
     driveTrain.setSafetyEnabled(false);
@@ -156,7 +162,7 @@ public class Robot extends TimedRobot {
     //The driving code
     throttleInput = (-drivingController.getY(Hand.kRight));
     turningInput = (drivingController.getX(Hand.kLeft));
-    
+
     //square the inputs for throttle
     if (throttleInput < 0){
     throttleInput = -(throttleInput*throttleInput);
