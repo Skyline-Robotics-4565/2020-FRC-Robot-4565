@@ -7,6 +7,10 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
+import com.ctre.phoenix.motorcontrol.TalonFXInvertType;
+import com.ctre.phoenix.motorcontrol.can.TalonFXConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.wpilibj.GenericHID.Hand;
@@ -38,6 +42,8 @@ public class Robot extends TimedRobot {
   WPI_TalonFX frontRightDrive;
   WPI_TalonFX backRightDrive;
 
+  TalonFXConfiguration motorConfig;
+
   XboxController drivingController;
   XboxController operatingController;
 
@@ -46,11 +52,26 @@ public class Robot extends TimedRobot {
   double throttleInput;
   double turningInput;
 
+  //used for encoders
+  double position;
+  double posRot;
+  double velocity;
+  double velRot;
+  double displacement;
+  int feetDisplay;
+  double inchDisplay;
+
   //the actual driving objects
 
   SpeedControllerGroup leftDrive;
   SpeedControllerGroup rightDrive;
   DifferentialDrive driveTrain;
+
+  final int kUnitsPerRevolution = 2048;
+  final TalonFXInvertType kInvertType = TalonFXInvertType.CounterClockwise;
+  final double distancePerRot = 8 * Math.PI;
+
+  int printloop = 0;
 
   //timer used for autonomous driving
   Timer timer;
@@ -65,15 +86,31 @@ public class Robot extends TimedRobot {
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
 
+    //motor config set-up
+    motorConfig = new TalonFXConfiguration();
+    motorConfig.supplyCurrLimit =  new SupplyCurrentLimitConfiguration(true, 60, 70, 1);
+    motorConfig.primaryPID.selectedFeedbackSensor = FeedbackDevice.IntegratedSensor;
+
+    //create left speed drivers
     frontLeftDrive = new WPI_TalonFX(2);
     backLeftDrive = new WPI_TalonFX(3);
     leftDrive = new SpeedControllerGroup(frontLeftDrive, backLeftDrive);
+    frontLeftDrive.configAllSettings(motorConfig);
+    backLeftDrive.configAllSettings(motorConfig);
+    
     
     //create right speed drivers
     frontRightDrive = new WPI_TalonFX(4);
     backRightDrive = new WPI_TalonFX(5);
     rightDrive = new SpeedControllerGroup(frontRightDrive, backRightDrive);
+    frontRightDrive.configAllSettings(motorConfig);
+    backRightDrive.configAllSettings(motorConfig);
 
+    frontLeftDrive.setSelectedSensorPosition(0);
+    backLeftDrive.setSelectedSensorPosition(0);
+    frontRightDrive.setSelectedSensorPosition(0);
+    backRightDrive.setSelectedSensorPosition(0);
+    
     //set ramp rate
     frontLeftDrive.configOpenloopRamp(.2);
     backLeftDrive.configOpenloopRamp(.2);
@@ -108,6 +145,25 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    position = frontLeftDrive.getSelectedSensorPosition(0); //gets position units from front left motor
+    posRot = (double) position/kUnitsPerRevolution/16.48;
+    velocity = frontLeftDrive.getSelectedSensorPosition(0);
+    velRot = (double) velocity/kUnitsPerRevolution*10/16.48;
+
+    displacement = (distancePerRot*posRot);
+
+    feetDisplay = (int) (displacement/12);
+    inchDisplay = (displacement%12);
+
+    printloop++;
+
+    if (printloop%100 == 0){
+    System.out.println("Position value: " + position);
+    System.out.println("Rotation Position value: " + posRot);
+    System.out.println("Velocity value: " + velocity);
+    System.out.println("Rotation Velocity value: " + velRot);
+    System.out.println("Distance: " + feetDisplay + "ft. " + inchDisplay + "in.");
+    }
   }
 
   /**
@@ -147,7 +203,7 @@ public class Robot extends TimedRobot {
         break;
     }
 
-    if (timer.get() > 7.5){
+    if (feetDisplay >= 3){
       driveTrain.arcadeDrive(0, 0);
       timer.stop();
       timer.reset();
