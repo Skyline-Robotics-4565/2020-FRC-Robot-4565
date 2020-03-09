@@ -12,11 +12,7 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.TalonFXInvertType;
 import com.ctre.phoenix.motorcontrol.can.TalonFXConfiguration;
-import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-
-// Import relating to arm and intake motors
-// Arm and intake motors are going to be controlled by VictorSPX's 
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 
 import edu.wpi.first.wpilibj.GenericHID.Hand;
@@ -73,16 +69,16 @@ public class Robot extends TimedRobot {
   DifferentialDrive driveTrain;
 
   //motor controlling the arm
-  VictorSPX armMotor;
+  WPI_VictorSPX armMotor;
 
   //motor controlling the roller intake
-  VictorSPX intakeMotor;
+  WPI_VictorSPX intakeMotor;
 
   //motor controlling the pulley for climbing
-  VictorSPX pulleyMotor;
+  WPI_VictorSPX pulleyMotor;
 
   //motor for the winch
-  VictorSPX winchMotor;
+  WPI_VictorSPX winchMotor;
 
   final int kUnitsPerRevolution = 2048;
   final TalonFXInvertType kInvertType = TalonFXInvertType.CounterClockwise;
@@ -138,12 +134,12 @@ public class Robot extends TimedRobot {
     driveTrain.setSafetyEnabled(false);
 
     //create the motors for intake
-    armMotor = new VictorSPX(7);
-	intakeMotor = new VictorSPX(6);
+    armMotor = new WPI_VictorSPX(7);
+	intakeMotor = new WPI_VictorSPX(6);
 	
 	//create the motors for climbing
-	pulleyMotor = new VictorSPX(8);
-	winchMotor = new VictorSPX(9);
+	pulleyMotor = new WPI_VictorSPX(8);
+	winchMotor = new WPI_VictorSPX(9);
 
     //Controller that controls movement
     drivingController = new XboxController(0);
