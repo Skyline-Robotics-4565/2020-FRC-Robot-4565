@@ -7,16 +7,17 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.TalonFXInvertType;
 import com.ctre.phoenix.motorcontrol.can.TalonFXConfiguration;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -67,14 +68,17 @@ public class Robot extends TimedRobot {
   SpeedControllerGroup rightDrive;
   DifferentialDrive driveTrain;
 
+  //motor controlling the arm
+  VictorSPX armMotor;
+
+  //motor controlling the roller intake
+  VictorSPX intakeMotor;
+
   final int kUnitsPerRevolution = 2048;
   final TalonFXInvertType kInvertType = TalonFXInvertType.CounterClockwise;
   final double distancePerRot = 8 * Math.PI;
 
-  int printloop = 0;
-
-  //timer used for autonomous driving
-  Timer timer;
+  //int printloop = 0;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -121,6 +125,10 @@ public class Robot extends TimedRobot {
     driveTrain = new DifferentialDrive(leftDrive, rightDrive);
     driveTrain.setSafetyEnabled(false);
 
+    //create the motors for intake
+    armMotor = new VictorSPX(7);
+    intakeMotor = new VictorSPX(6);
+
     //Controller that controls movement
     drivingController = new XboxController(0);
     //Controller that controls literally everything else
@@ -129,9 +137,6 @@ public class Robot extends TimedRobot {
     //numbers used to square movement in teleop
     throttleInput = 0;
     turningInput = 0;
-
-    //global timer set-up, used for autonomous
-    timer = new Timer();
 
   }
 
@@ -155,8 +160,9 @@ public class Robot extends TimedRobot {
     feetDisplay = (int) (displacement/12);
     inchDisplay = (displacement%12);
 
+    /*
     printloop++;
-
+    
     if (printloop%100 == 0){
     System.out.println("Position value: " + position);
     System.out.println("Rotation Position value: " + posRot);
@@ -164,6 +170,7 @@ public class Robot extends TimedRobot {
     System.out.println("Rotation Velocity value: " + velRot);
     System.out.println("Distance: " + feetDisplay + "ft. " + inchDisplay + "in.");
     }
+    */
   }
 
   /**
@@ -184,7 +191,6 @@ public class Robot extends TimedRobot {
     System.out.println("Auto selected: " + m_autoSelected);
     
     //start driving at half speed
-    timer.start();
     driveTrain.arcadeDrive(.5, 0);
   }
 
@@ -205,8 +211,6 @@ public class Robot extends TimedRobot {
 
     if (feetDisplay >= 3){
       driveTrain.arcadeDrive(0, 0);
-      timer.stop();
-      timer.reset();
     }
   }
 
@@ -234,6 +238,26 @@ public class Robot extends TimedRobot {
   }
 
   driveTrain.arcadeDrive(throttleInput, turningInput);
+
+
+  //Activate arm motor with right trigger as priority
+  if (operatingController.getTriggerAxis(Hand.kRight) > 0.1){
+    armMotor.set(ControlMode.PercentOutput, operatingController.getTriggerAxis(Hand.kRight));
+  }else if (operatingController.getTriggerAxis(Hand.kLeft) > 0.1){
+    armMotor.set(ControlMode.PercentOutput, -operatingController.getTriggerAxis(Hand.kLeft));
+  }else{
+    armMotor.set(ControlMode.PercentOutput, 0);
+  }
+
+  //Activate intake with right bumper as priority
+  if (operatingController.getBumperPressed(Hand.kRight)){
+    intakeMotor.set(ControlMode.PercentOutput, .5);
+  }else if (operatingController.getBumperPressed(Hand.kLeft)){
+    intakeMotor.set(ControlMode.PercentOutput, -.5);
+  }else{
+    intakeMotor.set(ControlMode.PercentOutput, 0);
+  }
+
 }
   
   /**
