@@ -46,10 +46,6 @@ public class Robot extends TimedRobot {
   WPI_TalonFX backLeftDrive;
   WPI_TalonFX frontRightDrive;
   WPI_TalonFX backRightDrive;
-
-  // Variable names for arm and intake motors 
-  WPI_VictorSPX armMotor; 
-  WPI_VictorSPX intakeMotor; 
   
   TalonFXConfiguration motorConfig;
 
