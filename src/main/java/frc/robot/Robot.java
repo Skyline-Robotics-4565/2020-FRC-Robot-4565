@@ -275,6 +275,7 @@ public class Robot extends TimedRobot {
     pulleyMotor.set(ControlMode.PercentOutput, 0);
   }
 
+  //Activate winch motor using triggers
   if (operatingController.getTriggerAxis(Hand.kRight) > .1){
 	winchMotor.set(ControlMode.PercentOutput, operatingController.getTriggerAxis(Hand.kRight));
   }else if (operatingController.getTriggerAxis(Hand.kLeft) > .1){
