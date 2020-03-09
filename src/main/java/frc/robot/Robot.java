@@ -240,11 +240,9 @@ public class Robot extends TimedRobot {
   driveTrain.arcadeDrive(throttleInput, turningInput);
 
 
-  //Activate arm motor with right trigger as priority
-  if (operatingController.getTriggerAxis(Hand.kRight) > 0.1){
-    armMotor.set(ControlMode.PercentOutput, operatingController.getTriggerAxis(Hand.kRight));
-  }else if (operatingController.getTriggerAxis(Hand.kLeft) > 0.1){
-    armMotor.set(ControlMode.PercentOutput, -operatingController.getTriggerAxis(Hand.kLeft));
+  //Activate arm motor using left joystick
+  if (Math.abs(operatingController.getY(Hand.kLeft))> 0.1){
+    armMotor.set(ControlMode.PercentOutput, operatingController.getY(Hand.kLeft));
   }else{
     armMotor.set(ControlMode.PercentOutput, 0);
   }
