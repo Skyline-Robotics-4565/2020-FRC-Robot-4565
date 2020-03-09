@@ -13,6 +13,10 @@ import com.ctre.phoenix.motorcontrol.TalonFXInvertType;
 import com.ctre.phoenix.motorcontrol.can.TalonFXConfiguration;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
+// Import relating to arm and intake motors
+// Arm and intake motors are going to be controlled by VictorSPX's 
+import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
+
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -42,6 +46,10 @@ public class Robot extends TimedRobot {
   WPI_TalonFX frontRightDrive;
   WPI_TalonFX backRightDrive;
 
+  // Variable names for arm and intake motors 
+  WPI_VictorSPX armMotor; 
+  WPI_VictorSPX intakeMotor; 
+  
   TalonFXConfiguration motorConfig;
 
   XboxController drivingController;
@@ -132,6 +140,12 @@ public class Robot extends TimedRobot {
 
     //global timer set-up, used for autonomous
     timer = new Timer();
+
+    // Constructor for a new VictorSPX object (arm motor)
+    // armMotor = new WPI_VictorSPX(parameter here);
+
+    // Constructor for a new VictorSPX object (intake motor)
+    // intakeMotor = new WPI_VictorSPX(parameter here); 
 
   }
 
@@ -234,6 +248,10 @@ public class Robot extends TimedRobot {
   }
 
   driveTrain.arcadeDrive(throttleInput, turningInput);
+
+  // Makes the arm motor do stuff
+
+  // Makes the intake motor do stuff 
 }
   
   /**
