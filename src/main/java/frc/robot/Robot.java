@@ -74,6 +74,12 @@ public class Robot extends TimedRobot {
   //motor controlling the roller intake
   VictorSPX intakeMotor;
 
+  //motor controlling the pulley for climbing
+  VictorSPX pulleyMotor;
+
+  //motor for the winch
+  VictorSPX winchMotor;
+
   final int kUnitsPerRevolution = 2048;
   final TalonFXInvertType kInvertType = TalonFXInvertType.CounterClockwise;
   final double distancePerRot = 8 * Math.PI;
@@ -119,7 +125,9 @@ public class Robot extends TimedRobot {
     frontLeftDrive.configOpenloopRamp(.2);
     backLeftDrive.configOpenloopRamp(.2);
     frontRightDrive.configOpenloopRamp(.2);
-    backRightDrive.configOpenloopRamp(.2);
+	backRightDrive.configOpenloopRamp(.2);
+
+	winchMotor.configOpenloopRamp(.2);	
 
     //the driving bit
     driveTrain = new DifferentialDrive(leftDrive, rightDrive);
@@ -127,7 +135,11 @@ public class Robot extends TimedRobot {
 
     //create the motors for intake
     armMotor = new VictorSPX(7);
-    intakeMotor = new VictorSPX(6);
+	intakeMotor = new VictorSPX(6);
+	
+	//create the motors for climbing
+	pulleyMotor = new VictorSPX(8);
+	winchMotor = new VictorSPX(9);
 
     //Controller that controls movement
     drivingController = new XboxController(0);
@@ -145,7 +157,7 @@ public class Robot extends TimedRobot {
    * this for items like diagnostics that you want ran during disabled,
    * autonomous, teleoperated and test.
    *
-   * <p>This runs after the mode specific periodic functions, but before
+   * This runs after the mode specific periodic functions, but before
    * LiveWindow and SmartDashboard integrated updating.
    */
   @Override
@@ -254,6 +266,21 @@ public class Robot extends TimedRobot {
     intakeMotor.set(ControlMode.PercentOutput, -.5);
   }else{
     intakeMotor.set(ControlMode.PercentOutput, 0);
+  }
+
+  //Activate pulley motor using right joystick
+  if (Math.abs(operatingController.getY(Hand.kRight))> 0.1){
+    pulleyMotor.set(ControlMode.PercentOutput, operatingController.getY(Hand.kRight));
+  }else{
+    pulleyMotor.set(ControlMode.PercentOutput, 0);
+  }
+
+  if (operatingController.getTriggerAxis(Hand.kRight) > .1){
+	winchMotor.set(ControlMode.PercentOutput, operatingController.getTriggerAxis(Hand.kRight));
+  }else if (operatingController.getTriggerAxis(Hand.kLeft) > .1){
+	winchMotor.set(ControlMode.PercentOutput, operatingController.getTriggerAxis(Hand.kLeft));
+  }else{
+	winchMotor.set(ControlMode.PercentOutput, 0);
   }
 
 }
