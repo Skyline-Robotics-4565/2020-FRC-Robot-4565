@@ -37,7 +37,7 @@ public class Robot extends TimedRobot {
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
   //The giant, unending list of variables
-
+ 
   WPI_TalonFX frontLeftDrive;
   WPI_TalonFX backLeftDrive;
   WPI_TalonFX frontRightDrive;
@@ -49,7 +49,6 @@ public class Robot extends TimedRobot {
   XboxController operatingController;
 
   //used to sqaure input
-
   double throttleInput;
   double turningInput;
 
@@ -63,7 +62,6 @@ public class Robot extends TimedRobot {
   double inchDisplay;
 
   //the actual driving objects
-
   SpeedControllerGroup leftDrive;
   SpeedControllerGroup rightDrive;
   DifferentialDrive driveTrain;
@@ -74,12 +72,13 @@ public class Robot extends TimedRobot {
   //motor controlling the roller intake
   WPI_VictorSPX intakeMotor;
 
-  //motor controlling the pulley for climbing
+  /*//motor controlling the pulley for climbing
   WPI_VictorSPX pulleyMotor;
 
   //motor for the winch
-  WPI_VictorSPX winchMotor;
+  WPI_VictorSPX winchMotor;*/
 
+  // Also used for the encoders
   final int kUnitsPerRevolution = 2048;
   final TalonFXInvertType kInvertType = TalonFXInvertType.CounterClockwise;
   final double distancePerRot = 8 * Math.PI;
@@ -116,30 +115,39 @@ public class Robot extends TimedRobot {
     frontRightDrive.configAllSettings(motorConfig);
     backRightDrive.configAllSettings(motorConfig);
 
+    // Sensor position is set to 0 
+    // Falcon 500 (powered by Talon FX) has integrated sensors 
     frontLeftDrive.setSelectedSensorPosition(0);
     backLeftDrive.setSelectedSensorPosition(0);
     frontRightDrive.setSelectedSensorPosition(0);
     backRightDrive.setSelectedSensorPosition(0);
     
     //set ramp rate
+    /* By setting a ramp rate, we prevent the motor from going full speed
+    when the controller uses a button/joystick that controlls said motor. 
+    - Audrey */
     frontLeftDrive.configOpenloopRamp(.2);
     backLeftDrive.configOpenloopRamp(.2);
     frontRightDrive.configOpenloopRamp(.2);
-	backRightDrive.configOpenloopRamp(.2);
-
-	winchMotor.configOpenloopRamp(.2);	
+    backRightDrive.configOpenloopRamp(.2);
+    
+    /*// Sets the ramp rate for the winch motor 
+    winchMotor.configOpenloopRamp(.2);*/ 	
 
     //the driving bit
     driveTrain = new DifferentialDrive(leftDrive, rightDrive);
     driveTrain.setSafetyEnabled(false);
 
     //create the motors for intake
-    armMotor = new WPI_VictorSPX(7);
-	intakeMotor = new WPI_VictorSPX(6);
-	
-	//create the motors for climbing
-	pulleyMotor = new WPI_VictorSPX(8);
-	winchMotor = new WPI_VictorSPX(9);
+    armMotor = new WPI_VictorSPX(7); // Located near the battery on top of a metal bar
+    intakeMotor = new WPI_VictorSPX(6); // Located near the rollers 
+
+    // Sets the ramp rate for the arm motor 
+    armMotor.configOpenloopRamp(.4); 
+
+   /* //create the motors for climbing
+    pulleyMotor = new WPI_VictorSPX(8); // "Location of the motor on the robot"
+    winchMotor = new WPI_VictorSPX(9); // "Location of the motor on the robot"*/ 
 
     //Controller that controls movement
     drivingController = new XboxController(0);
@@ -253,22 +261,28 @@ public class Robot extends TimedRobot {
 
 
   //Activate arm motor using left joystick
-  if (Math.abs(operatingController.getY(Hand.kLeft))> 0.1){
-    armMotor.set(ControlMode.PercentOutput, operatingController.getY(Hand.kLeft));
+  if (Math.abs(operatingController.getY(Hand.kLeft)) > 0.1){
+    armMotor.set(ControlMode.PercentOutput, 0.6 * operatingController.getY(Hand.kLeft));
   }else{
     armMotor.set(ControlMode.PercentOutput, 0);
   }
 
-  //Activate intake with right bumper as priority
+  // Right bumper intakes the powercells 
   if (operatingController.getBumperPressed(Hand.kRight)){
-    intakeMotor.set(ControlMode.PercentOutput, .5);
+    while (operatingController.getBumperReleased(Hand.kRight) == false){
+      intakeMotor.set(ControlMode.PercentOutput, -0.5); 
+    }
+  // Left bumper shoots out the powercells 
   }else if (operatingController.getBumperPressed(Hand.kLeft)){
-    intakeMotor.set(ControlMode.PercentOutput, -.5);
+    while (operatingController.getBumperReleased(Hand.kLeft) == false){
+      intakeMotor.set(ControlMode.PercentOutput, 0.5); 
+    }
   }else{
-    intakeMotor.set(ControlMode.PercentOutput, 0);
+    intakeMotor.set(ControlMode.PercentOutput, 0); 
   }
 
-  //Activate pulley motor using right joystick
+  }
+  /*//Activate pulley motor using right joystick
   if (Math.abs(operatingController.getY(Hand.kRight))> 0.1){
     pulleyMotor.set(ControlMode.PercentOutput, operatingController.getY(Hand.kRight));
   }else{
@@ -282,9 +296,7 @@ public class Robot extends TimedRobot {
 	winchMotor.set(ControlMode.PercentOutput, operatingController.getTriggerAxis(Hand.kLeft));
   }else{
 	winchMotor.set(ControlMode.PercentOutput, 0);
-  }
-
-}
+  }*/
   
   /**
    * This function is called periodically during test mode.
